@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2196f3, #64b5f6);
+            color: #fff;
+            text-align: center;
+        }
+
+        .container {
+            margin: 20px auto;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .task-input {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #taskInput {
+            width: 70%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #addTaskButton {
+            padding: 10px 20px;
+            background: #1e88e5;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #addTaskButton:hover {
+            background: #1565c0;
+        }
+
+        #taskList {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        #taskList li {
+            background: #fff;
+            color: #333;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        #taskList li:hover {
+            transform: scale(1.05);
+        }
+
+        #taskList li.completed {
+            text-decoration: line-through;
+            background: #bbdefb;
+        }
+
+        .actions button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #d32f2f;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .actions button:hover {
+            background: #b71c1c;
+        }
+
+        .counters {
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestion de Tâches (To-Do List)</h1>
+        <div class="task-input">
+            <input type="text" id="taskInput" placeholder="Ajouter une nouvelle tâche...">
+            <button id="addTaskButton">Ajouter</button>
+        </div>
+        <ul id="taskList">
+            <!-- Les tâches seront ajoutées ici -->
+        </ul>
+        <div class="actions">
+            <button id="clearAllButton">Tout supprimer</button>
+        </div>
+        <div class="counters">
+            <p>Total de tâches : <span id="totalTasks">0</span></p>
+            <p>Tâches terminées : <span id="completedTasks">0</span></p>
+        </div>
+    </div>
+    <script>
+        const taskInput = document.getElementById('taskInput');
+        const addTaskButton = document.getElementById('addTaskButton');
+        const taskList = document.getElementById('taskList');
+        const clearAllButton = document.getElementById('clearAllButton');
+        const totalTasksCounter = document.getElementById('totalTasks');
+        const completedTasksCounter = document.getElementById('completedTasks');
+
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        function updateCounters() {
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(task => task.completed).length;
+
+            totalTasksCounter.textContent = totalTasks;
+            completedTasksCounter.textContent = completedTasks;
+        }
+
+        function renderTasks() {
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.textContent = task.text;
+                li.className = task.completed ? 'completed' : '';
+                li.addEventListener('click', () => toggleTaskCompletion(index));
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Supprimer';
+                deleteButton.style.marginLeft = '10px';
+                deleteButton.style.background = '#e74c3c';
+                deleteButton.style.border = 'none';
+                deleteButton.style.color = '#fff';
+                deleteButton.style.borderRadius = '5px';
+                deleteButton.style.cursor = 'pointer';
+                deleteButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteTask(index);
+                });
+                li.appendChild(deleteButton);
+                taskList.appendChild(li);
+            });
+            updateCounters();
+            saveTasks();
+        }
+
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (text) {
+                tasks.push({ text, completed: false });
+                taskInput.value = '';
+                renderTasks();
+            }
+        }
+
+        function toggleTaskCompletion(index) {
+            tasks[index].completed = !tasks[index].completed;
+            renderTasks();
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            renderTasks();
+        }
+
+        function clearAllTasks() {
+            tasks = [];
+            renderTasks();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        addTaskButton.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+        clearAllButton.addEventListener('click', clearAllTasks);
+
+        renderTasks();
+    </script>
+</body>
+</html>
